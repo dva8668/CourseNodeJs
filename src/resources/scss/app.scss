@@ -1,0 +1,21 @@
+@import "variables";
+h1 {
+    font-size: 100px;
+    color: $green-color;
+}
+
+h2 {
+    color: $red-color;
+}
+
+.user-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    margin-right: 4px;
+}
+
+.select-full-option {
+    width: 200px;
+    margin: 0 16px;
+}

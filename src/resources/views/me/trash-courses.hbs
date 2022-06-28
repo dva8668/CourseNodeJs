@@ -1,0 +1,159 @@
+<form class="mt-4" name="container-form" method="POST" action="/courses/handle-form-action">
+    <h3>Khoa hoc da xoa</h3>
+    <a href="/me/stored/courses">Danh sach khoa hoc</a>
+
+
+    <div class="mt-4 d-flex">
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" value="" id="checkbox-all">
+            <label class="form-check-label" for="checkbox-all">
+              Choose All
+            </label>
+          </div>
+
+          <select class="form-control form-control-sm select-full-option" name="action" required>
+            <option value=""> -- Hanh dong --</option>
+            <option value="restore">Restore</option>
+            <option value="remove">Remove</option>
+        </select>
+
+        <button class="btn btn-primary btn-sm disabled btnCheckAllSubmit">Thuc Hien</button>
+    </div>
+
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">STT</th>
+                <th scope="col">Ten Khoa Hoc</th>
+                <th scope="col">Trinh Do</th>
+                <th scope="col">Thoi gian xoa</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {{#each courses}}
+            <tr>
+                <td>
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="courseSlugs[]" value="{{this.slug}}">
+                  </div>
+                </td>
+                <th scope="row">{{sum @index 1}}</th>
+                <td>{{this.name}}</td>
+                <td>{{this.level}}</td>
+                <td>{{this.deletedAt}}</td>
+                <td>
+                    <a href="" class="btn btn-link btn-restore" data-slug = "{{this.slug}}">Restore</a>
+                    <a href="" class="btn btn-link" data-bs-toggle="modal" data-slug ="{{this.slug}}" data-bs-target="#delete-course">Remove</a>    
+                </td>
+
+            </tr>
+            {{else}}
+              <tr>
+                <td colspan="5" class="text-center">
+                  Chua co khoa hoc nao bi xoa.
+                  <a href="/me/stored/courses">Danh sach khoa hoc</a>
+                </td>
+              </tr>
+            {{/each}}
+        </tbody>
+    </table>
+</form>
+
+
+{{!-- Confirm DELETE course --}}
+
+<div class="modal" id="delete-course" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">RemoveCourse?</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>Are you sure you want to delete this course?.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="btn-delete-course" class="btn btn-danger">Remove</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{{!-- DELETE FORM --}}
+<form method="POST" id="delete-course-form"></form>
+<form method="POST" id="restore-course-form"></form>
+
+
+
+<script>
+    var slug;
+    var deleteForm = document.getElementById('delete-course-form')
+    var btnDeleteCourse = document.getElementById('btn-delete-course')
+    const deleteCourse = document.getElementById('delete-course')
+
+  
+    deleteCourse.addEventListener('show.bs.modal', event => {
+      const button = event.relatedTarget
+      slug = button.getAttribute('data-slug')
+    })
+    
+
+
+    //Clicked Delete btn
+    btnDeleteCourse.addEventListener('click', function() {
+      deleteForm.setAttribute('action', "/courses/" + slug +"/force?_method=DELETE");
+      deleteForm.submit();   //thuc hien submit len de xoa
+    })
+
+
+
+    //Clicked Restore btn
+    var restoreForm = document.getElementById('restore-course-form')
+    var restoreBtn = $('.btn-restore')
+
+    restoreBtn.click(function(e) {
+      e.preventDefault()
+      var courseSlug= $(this).attr('data-slug')
+      restoreForm.setAttribute('action', "/courses/" + courseSlug +"/restore/?_method=PATCH");
+      restoreForm.submit(); 
+    })
+
+
+  //CHeck box
+  var checkboxAll = $('#checkbox-all')
+  var courseItemCheckbox = $('input[name="courseSlugs[]"]')
+  var btnCheckAllSubmit = $('.btnCheckAllSubmit')
+
+  
+  checkboxAll.change(function() {
+    var isCheckedAll = $(this).prop('checked')
+    courseItemCheckbox.prop('checked', isCheckedAll);
+    renderCheckAllBtn()
+
+  })
+
+  //courses item checkbox change
+  courseItemCheckbox.change(function() {
+    var isCheckedAll = courseItemCheckbox.length === $('input[name="courseSlugs[]"]:checked').length
+    checkboxAll.prop('checked', isCheckedAll);
+    renderCheckAllBtn()
+  })
+
+
+  //render abled/disabled btn checked All
+  function renderCheckAllBtn() {
+    var checkedCount = $('input[name="courseSlugs[]"]:checked').length
+    if(checkedCount > 0) {
+      btnCheckAllSubmit.removeClass('disabled')
+    } else {
+      btnCheckAllSubmit.addClass('disabled')  
+    }
+  }
+
+    
+</script>
+

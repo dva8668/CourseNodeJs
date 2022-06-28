@@ -1,0 +1,153 @@
+<form class="mt-4" name="container-form" method="POST" action="/courses/handle-form-action">
+    <h3>Khoa hoc cua toi</h3>
+    <a href="/me/trash/courses">Thung rác ({{deletedCount}})</a>
+
+    <div class="mt-4 d-flex">
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" value="" id="checkbox-all">
+            <label class="form-check-label" for="checkbox-all">
+              Choose All
+            </label>
+          </div>
+
+          <select class="form-control form-control-sm select-full-option" name="action" required>
+            <option value=""> -- Hanh dong --</option>
+            <option value="delete">Xoa</option>
+            <option value="remove">Remove</option>
+        </select>
+
+        <button class="btn btn-primary btn-sm disabled btnCheckAllSubmit">Thuc Hien</button>
+    </div>
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">STT</th>
+                <th scope="col">
+                  Ten Khoa hoc
+                  {{{sortAble 'name' _sort}}}
+
+                  </th>
+                <th scope="col">
+                  Trinh Do
+                  {{{sortAble 'level' _sort}}}
+
+                  </th>
+                <th scope="col">
+                  Thoi gian tao
+                  {{{sortAble 'createdAt' _sort}}}
+                  </th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {{#each courses}}
+            <tr>
+                <td>
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="courseSlugs[]" value="{{this.slug}}">
+                  </div>
+                </td>
+                <th scope="row">{{sum @index 1}}</th>
+                <td>{{this.name}}</td>
+                <td>{{this.level}}</td>
+                <td>{{this.createdAt}}</td>
+                <td>
+                    <a href="/courses/{{this.slug}}/edit" class="btn btn-link">Edit</a>
+                    <a href="" class="btn btn-link" data-bs-toggle="modal" data-slug ="{{this.slug}}" data-bs-target="#delete-course">Delete</a>    
+                </td>
+
+            </tr>
+            {{else}}
+              <tr>
+                <td colspan="5" class="text-center">
+                  You don't have a Course.
+                  <a href="/courses/create">Create Course</a>
+                </td>
+              </tr>
+            {{/each}}
+        </tbody>
+    </table>
+</form>
+
+
+{{!-- Confirm DELETE course --}}
+
+<div class="modal" id="delete-course" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">DELETE Course?</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>You can delete course.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="btn-delete-course" class="btn btn-danger">Delete Now</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{{!-- DELETE FORM --}}
+<form method="POST" id="delete-course-form"></form>
+
+
+<script>
+
+    var slug;
+    const deleteCourse = document.getElementById('delete-course')
+    deleteCourse.addEventListener('show.bs.modal', event => {
+    // Button that triggered the modal
+    const button = event.relatedTarget
+    // Extract info from data-bs-* attributes
+    slug = button.getAttribute('data-slug')
+    })
+    
+
+
+    var deleteForm = document.getElementById('delete-course-form')
+    var btnDeleteCourse = document.getElementById('btn-delete-course')
+    btnDeleteCourse.addEventListener('click', function() {
+            deleteForm.setAttribute('action', "/courses/" + slug +"?_method=DELETE");
+            deleteForm.submit();   //thuc hien submit len de xoa
+    })
+
+
+  //CHeck box
+  var checkboxAll = $('#checkbox-all')
+  var courseItemCheckbox = $('input[name="courseSlugs[]"]')
+  var btnCheckAllSubmit = $('.btnCheckAllSubmit')
+
+  
+  checkboxAll.change(function() {
+    var isCheckedAll = $(this).prop('checked')
+    courseItemCheckbox.prop('checked', isCheckedAll);
+    renderCheckAllBtn()
+
+  })
+
+  //courses item checkbox change
+  courseItemCheckbox.change(function() {
+    var isCheckedAll = courseItemCheckbox.length === $('input[name="courseSlugs[]"]:checked').length
+    checkboxAll.prop('checked', isCheckedAll);
+    renderCheckAllBtn()
+  })
+
+
+  //render abled/disabled btn checked All
+  function renderCheckAllBtn() {
+    var checkedCount = $('input[name="courseSlugs[]"]:checked').length
+    if(checkedCount > 0) {
+      btnCheckAllSubmit.removeClass('disabled')
+    } else {
+      btnCheckAllSubmit.addClass('disabled')  
+    }
+  }
+
+
+
+
+</script>
